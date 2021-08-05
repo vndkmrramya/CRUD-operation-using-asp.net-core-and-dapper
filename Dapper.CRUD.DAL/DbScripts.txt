@@ -1,0 +1,128 @@
+﻿CREATE DATABASE Dapper20210804
+GO
+
+USE Dapper20210804
+GO
+
+CREATE TABLE [dbo].[Categories](
+	[CategoryId] [int] IDENTITY(1,1) NOT NULL PRIMARY KEY,
+	[Name] [varchar](50) NULL
+)
+GO
+
+
+CREATE TABLE [Products](
+	[ProductId] [int] IDENTITY(1,1) NOT NULL,
+	[Name] [varchar](50) NOT NULL,
+	[Description] [varchar](250) NOT NULL,
+	[UnitPrice] [decimal](18, 2) NOT NULL,
+	[CategoryId] [int] NOT NULL,
+	FOREIGN KEY ([CategoryId]) REFERENCES [Categories]([CategoryId])
+)
+GO
+
+
+CREATE procedure [dbo].[spGetAllProduct]
+as
+BEGIN
+   SELECT prod.*, cat.Name as [Category]
+   FROM Products prod
+   INNER JOIN Categories cat
+   ON prod.CategoryId = cat.CategoryId
+   ORDER BY prod.ProductId
+END
+GO
+
+CREATE procedure [dbo].[spGetProductDetailsByProductId]
+(
+	@ProductId AS Integer
+)
+as
+BEGIN
+   SELECT prod.*, cat.Name as [Category]
+   FROM Products prod
+   INNER JOIN Categories cat
+   ON prod.CategoryId = cat.CategoryId and prod.ProductId = @ProductId
+   ORDER BY prod.ProductId
+END
+GO
+
+
+CREATE procedure [dbo].[spAddProduct]
+(
+@Name varchar(50),
+@Description varchar(50),
+@UnitPrice decimal(18,2),
+@CategoryId INTEGER
+)
+as
+BEGIN
+  INSERT INTO Products([Name], [Description], [UnitPrice], [CategoryId])
+  Values (@Name, @Description, @UnitPrice, @CategoryId)
+END
+GO
+
+
+
+CREATE procedure [dbo].[spUpdateProduct]
+(
+@ProductId INTEGER,
+@Name varchar(50),
+@Description varchar(50),
+@UnitPrice decimal(18,2),
+@CategoryId INTEGER
+)
+as
+BEGIN
+  UPDATE Products
+	SET [Name] = @Name, 
+	[Description] = @Description,
+	[UnitPrice] = @UnitPrice,
+	[CategoryId] = @CategoryId 
+  WHERE ProductId=@ProductId
+END
+GO
+
+
+
+CREATE procedure [dbo].[spDeleteProduct]
+(
+@ProductId INTEGER
+)
+as
+BEGIN
+  DELETE FROM Products
+  WHERE ProductId=@ProductId
+END
+GO
+
+
+
+CREATE procedure [dbo].[spGetProductById]
+(
+@ProductId INTEGER
+)
+as
+BEGIN
+  SELECT * FROM Products
+  WHERE ProductId=@ProductId
+END
+GO
+
+CREATE procedure [dbo].[spGetAllCategories]
+as
+BEGIN
+   SELECT * 
+   FROM Categories cat
+   ORDER BY cat.CategoryId
+END
+GO
+
+CREATE FUNCTION [dbo].[fn_GetProductsByProductId]
+(
+	@ProductId AS INTEGER
+)
+RETURNS TABLE
+AS
+RETURN (Select * from Products where ProductId=@ProductId)
+GO
